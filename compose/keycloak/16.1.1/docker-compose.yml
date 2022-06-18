@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  mysql_keycloak:
+    container_name: mysql_keycloak    
+    image: mysql:8.0.29
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      MYSQL_PASSWORD: ${MYSQL_PASS}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  keycloak_mysql:
+    depends_on:
+      - mysql_keycloak
+    container_name: keycloak_mysql
+    environment:
+      DB_VENDOR: mysql
+      DB_ADDR: mysql_keycloak
+      DB_DATABASE: ${MYSQL_DB}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASS}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      VIRTUAL_PORT: "8080"
+      HTTPS_METHOD: redirect
+      PROXY_ADDRESS_FORWARDING: "true" # <==== importante para funcionar com proxy reverso
+    volumes:
+      - keycloak_data:/opt/keycloak        
+    image: jboss/keycloak:16.1.1
+    restart: unless-stopped
+    ports:
+      - 8080:8080    
+volumes:
+  mysql_data:
+  keycloak_data:
+
+
+#Network do container do nginx-proxy
+networks:
+  default:
+    external:
+      name: nginx-proxy

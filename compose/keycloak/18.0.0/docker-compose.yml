@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  mysql_keycloak:
+    container_name: mysql_keycloak    
+    image: mysql:8.0.29
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      MYSQL_PASSWORD: ${MYSQL_PASS}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  keycloak_mysql:
+    depends_on:
+      - mysql_keycloak
+    container_name: keycloak_mysql
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${MYSQL_USER}
+      KC_DB_PASSWORD: ${MYSQL_PASS}
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: "edge"         
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}       
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      VIRTUAL_PORT: "8080"
+    volumes:
+      - keycloak_data:/opt/keycloak  
+    image: guidi/keycloak:18.0.0
+    restart: unless-stopped
+    ports:
+      - 8080:8080    
+
+volumes:
+  mysql_data:
+  keycloak_data:
+
+#Network do container do nginx-proxy
+networks:
+  default:
+    external:
+      name: nginx-proxy
