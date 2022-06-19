@@ -14,8 +14,6 @@ services:
       - html:/usr/share/nginx/html
       - certs:/etc/nginx/certs
       - ./custom.conf:/etc/nginx/conf.d/custom.conf:ro
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
 
   dockergen:
     image: nginxproxy/docker-gen:0.9.0
